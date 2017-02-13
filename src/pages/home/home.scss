@@ -1,0 +1,44 @@
+// @Author: Nicolas Fazio <webmaster-fazio>
+// @Date:   05-02-2017
+// @Email:  contact@nicolasfazio.ch
+// @Last modified by:   webmaster-fazio
+// @Last modified time: 13-02-2017
+
+page-home {
+
+  #topView, #arView {
+    
+  }
+  #arView{
+    padding:30px 0;
+    height:70px;
+    text-align:center
+  }
+  ion-badge {
+    padding: 8px 15px;
+    font-size: 2rem;
+  }
+  .spotsList {
+    ion-badge {
+      padding: 8px 15px;
+      font-size: 1.4rem;
+      font-weight: 300;
+      margin-top:5px;
+      transition: 250ms ease;
+    }
+  }
+  .gMap {
+    position: absolute;
+    top:0px;
+    left:0px;
+    min-height: 250px;
+    width: 100%;
+  }
+}
+page-home, .ios .ion-page.show-page ~ .nav-decor {
+  background-color: transparent !important;
+}
+#ezarpage {
+    background-color: transparent !important;
+    color: white !important;
+}

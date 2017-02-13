@@ -1,0 +1,54 @@
+// @Author: Nicolas Fazio <webmaster-fazio>
+// @Date:   05-02-2017
+// @Email:  contact@nicolasfazio.ch
+// @Last modified by:   webmaster-fazio
+// @Last modified time: 13-02-2017
+
+// http://ionicframework.com/docs/v2/theming/
+
+
+// App Global Sass
+// --------------------------------------------------
+// Put style rules here that you want to apply globally. These
+// styles are for the entire app and not just one component.
+// Additionally, this file can be also used as an entry point
+// to import other Sass files to be included in the output CSS.
+//
+// Shared Sass variables, which can be used to adjust Ionic's
+// default Sass variables, belong in "theme/variables.scss".
+//
+// To declare rules for a specific mode, create a child rule
+// for the .md, .ios, or .wp mode classes. The mode class is
+// automatically applied to the <body> element in the app.
+
+//enable ezAR video to show through <body> element
+body {
+    background-color: transparent;
+}
+
+//enable ezAR video to show through ionic app's root component
+//hack: prevents theme specific overriding of background-color
+ion-app {
+    background-color: transparent !important;
+}
+
+.log {text-shadow:0 1px #666}
+#debug {border:1px solid #999;display:none}
+
+// animation times
+.a250 {
+  transition: 250ms ease;
+}
+.a500 {
+  transition: 500ms ease;
+}
+.a1000 {
+  transition: 1000ms ease;
+}
+// animation effects
+.fadeIn {
+   opacity: 1;
+}
+.fadeOut {
+   opacity: 0;
+}
