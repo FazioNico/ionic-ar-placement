@@ -240,11 +240,11 @@ export class HomePage {
         if(Math.abs(this.pin[i].bearing - degree) <= 20){
             let away, fontSize, fontColor;
             // varry font size based on distance from gps location
-            if(this.pin[i].distance.feet>1500 || this.pin[i].distance.meter > 457){
+            if(this.pin[i].distance.miles>1500 || this.pin[i].distance.meter > 457){
                 away = this.pin[i].distance;
                 fontSize = "16";
                 fontColor = "#ccc";
-            } else if(this.pin[i].distance.feet >500 || this.pin[i].distance.meter > 131){
+            } else if(this.pin[i].distance.miles >500 || this.pin[i].distance.meter > 131){
                 away = this.pin[i].distance;
                 fontSize = "24";
                 fontColor = "#ddd";
@@ -341,8 +341,8 @@ export class HomePage {
       let c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 
       let distance = {
-        feet: 3958.76  * c,
-        meter: (3958.76  * c) * 0.3048
+        miles: 3958.76  * c,
+        meter: (3958.76  * c) * 1609.34
       };
       pin['distance'] = distance;
   }
