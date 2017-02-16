@@ -176,6 +176,17 @@ export class HomePage {
       this.log.push("Error onGeolocation")
       return
     }
+    // test if user have move more than 5 meters
+    if(this.userLocation){
+      var distance = this.calculateDistance(this.userLocation.position.lat, this.userLocation.position.lng, data.position.lat, data.position.lng);
+      console.log('check distance-> ',distance )
+      if (distance <= 15) {
+        // Stop load data
+        console.log('stop load data',distance )
+        return;
+      }
+    }
+
     // asign user location to display
     this.userLocation = data;
     //document.getElementById('geolocation').innerHTML = 'Latitude: ' + data.position.lat + '<br />' + 'Longitude: ' + data.position.lng;
@@ -287,6 +298,7 @@ export class HomePage {
       }
       this._googlePlaceService.getData('nearbysearch', parmUrl)
         .then((response:any)=>{
+          // TODO test this .then()
           // clean previous data array
           this.pin = []
           return response
@@ -346,6 +358,12 @@ export class HomePage {
       };
       pin['distance'] = distance;
   }
+
+  // Calculates the distance between two GPS points
+  calculateDistance(lat1, long1, lat2, long2) {
+      return 11*10000*Math.sqrt(Math.pow(lat1-lat2,2)+Math.pow(long1-long2,2))
+  }
+
   /* Eof - HomePage Core Methode */
 
 }
