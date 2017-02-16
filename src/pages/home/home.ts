@@ -3,7 +3,7 @@
 * @Date:   05-02-2017
 * @Email:  contact@nicolasfazio.ch
 * @Last modified by:   webmaster-fazio
-* @Last modified time: 13-02-2017
+* @Last modified time: 16-02-2017
 */
 
 import { Component, ViewChild, ElementRef } from '@angular/core';
@@ -13,6 +13,7 @@ import { AccelerometerService } from '../../providers/accelerometer-service';
 import { CompassService } from '../../providers/compass-service';
 import { GeolocationService } from '../../providers/geolocation-service';
 import { GoogleMapService } from '../../providers/google-map-service';
+import { GooglePlaceService } from '../../providers/google-place-service';
 
 declare var google;
 
@@ -23,11 +24,11 @@ declare var google;
 export class HomePage {
   pin:any = [
       //{"name":"Miami", "lat":"25.788969", "lng":"-80.226439"},
-      {"name":"École de Commerce Emilie Gourd", "lat":"46.1937510", "lng":"6.1680810"},
-      {"name":"Migros Rieu", "lat":"46.1919780", "lng":"6.1640420"},
-      {"name":"Ateliers Nomades", "lat":"46.1910980", "lng":"6.1357960"},
-      {"name":"Denner Rieu", "lat":"46.1940520", "lng":"6.1660530"},
-      {"name":"La Florance", "lat":"46.1917560", "lng":"6.1690610"}
+      // {"name":"École de Commerce Emilie Gourd", "lat":"46.1937510", "lng":"6.1680810"},
+      // {"name":"Migros Rieu", "lat":"46.1919780", "lng":"6.1640420"},
+      // {"name":"Ateliers Nomades", "lat":"46.1910980", "lng":"6.1357960"},
+      // {"name":"Denner Rieu", "lat":"46.1940520", "lng":"6.1660530"},
+      // {"name":"La Florance", "lat":"46.1917560", "lng":"6.1690610"}
   ];
   dataStatus:number = 0;
 
@@ -48,7 +49,8 @@ export class HomePage {
     private _accelerometerService: AccelerometerService,
     private _compassService: CompassService,
     private _geolocationService: GeolocationService,
-    private _googleMapService: GoogleMapService
+    private _googleMapService: GoogleMapService,
+    private _googlePlaceService: GooglePlaceService
   ) {
     this.loadGoogleSDK();
     platform.ready().then(() => {
@@ -146,7 +148,7 @@ export class HomePage {
     }
     // print data result
     this.userDirection = data.direction;
-    document.getElementById('compass').innerHTML = data.degree + "<br>" + data.direction;
+    //document.getElementById('compass').innerHTML = data.degree + "<br>" + data.direction;
     //document.getElementById('direction').innerHTML = data.direction;
     // calculateDirection of each pinPoints with data.degree
     this.calculateDirection(data.degree);
@@ -276,17 +278,55 @@ export class HomePage {
   // get data from API and store in array, add to list view and create markers on map, calculate
   loadData(position){
       console.log('load data position-> ', position);
-      // calacule distance relative between user position and each pin element
-      for(var i=0; i< this.pin.length; i++){
-          this.relativePosition(i,position);
+      let parmUrl = {
+        location: {
+          lat: position.lat,
+          lng: position.lng
+        },
+        radius: '500'
       }
-      this.dataStatus = 1;
+      this._googlePlaceService.getData('nearbysearch', parmUrl)
+        .then((response:any)=>{
+          // clean previous data array
+          this.pin = []
+          return response
+        })
+        .then( (response:any) => {
+          // formate place element with geoposition
+          response.map(place => {
+            place.lat = place.geometry.location.lat(),
+            place.lng = place.geometry.location.lng()
+            return place;
+          })
+          .map(place => {
+            console.log(place)
+            // add new place in data array
+            this.pin.push(place)
+          })
+          return response
+        })
+        .then(_=>{
+          // calacule distance relative between user position and each pin element
+          this.pin.map(place => {
+            this.relativePosition(place,position);
+          })
+        })
+        .then(_=> {
+          /// create marker
+          if(this._geolocationService.myLat && this._geolocationService.myLng){
+            this.loadGoogleMapData({lat: this._geolocationService.myLat,lng: this._geolocationService.myLng});
+          }
+        })
+        .then(_=>{
+          this.dataStatus = 1;
+        })
+
   }
 
   // calulate distance and bearing value for each of the points wrt gps lat/lng
-  relativePosition(i,position){
-      let pinLat = this.pin[i].lat;
-      let pinLng = this.pin[i].lng;
+  relativePosition(pin,position){
+      let pinLat = pin.lat;
+      let pinLng = pin.lng;
       let dLat = (position.lat-pinLat)* Math.PI / 180;
       let dLon = (position.lng-pinLng)* Math.PI / 180;
       let lat1 = pinLat * Math.PI / 180;
@@ -295,7 +335,7 @@ export class HomePage {
       let x = Math.cos(lat1)*Math.sin(lat2) - Math.sin(lat1)*Math.cos(lat2)*Math.cos(dLon);
       let bearing = Math.atan2(y, x) * 180 / Math.PI;
       bearing = bearing + 180;
-      this.pin[i]['bearing'] = bearing;
+      pin['bearing'] = bearing;
 
       let a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.sin(dLon/2) * Math.sin(dLon/2) * Math.cos(lat1) * Math.cos(lat2);
       let c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
@@ -304,7 +344,7 @@ export class HomePage {
         feet: 3958.76  * c,
         meter: (3958.76  * c) * 0.3048
       };
-      this.pin[i]['distance'] = distance;
+      pin['distance'] = distance;
   }
   /* Eof - HomePage Core Methode */
 

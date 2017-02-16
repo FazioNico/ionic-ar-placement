@@ -3,7 +3,7 @@
 * @Date:   06-02-2017
 * @Email:  contact@nicolasfazio.ch
 * @Last modified by:   webmaster-fazio
-* @Last modified time: 13-02-2017
+* @Last modified time: 15-02-2017
 */
 
 import { Injectable, EventEmitter } from '@angular/core';
@@ -46,7 +46,7 @@ export class GoogleMapService extends EventEmitter<any> {
          script.id = "googleMaps";
          script.async = true;
          if(this.apiKey){
-           script.src = 'http://maps.google.com/maps/api/js?key=' + this.apiKey + '&callback=mapInit';
+           script.src = 'http://maps.google.com/maps/api/js?key=' + this.apiKey + '&libraries=places&callback=mapInit';
          } else {
            script.src = 'http://maps.google.com/maps/api/js?callback=mapInit';
          }

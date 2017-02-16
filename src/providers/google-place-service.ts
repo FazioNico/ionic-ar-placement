@@ -3,13 +3,13 @@
 * @Date:   14-02-2017
 * @Email:  contact@nicolasfazio.ch
 * @Last modified by:   webmaster-fazio
-* @Last modified time: 15-02-2017
+* @Last modified time: 16-02-2017
 */
 
 
 
 import { Injectable } from '@angular/core';
-import { Http, Response } from '@angular/http';
+import { Http, RequestOptions, Headers, Response } from '@angular/http';
 import { Observable }   from 'rxjs/Observable';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/filter';
@@ -28,11 +28,12 @@ declare var google;
 export class GooglePlaceService {
 
   apiKey:string = GPLACE_API_KEY;
-  urlEnpoint:any = {
-    nearbysearch: 'https://maps.googleapis.com/maps/api/place/nearbysearch/json?',
-    textsearch: 'https://maps.googleapis.com/maps/api/place/textsearch/json?',
-    radarsearch: 'https://maps.googleapis.com/maps/api/place/radarsearch/output?'
+  apiEnpoint:any = {
+    nearbysearch: 'nearbySearch',
+    textsearch: 'textSearch',
+    radarSearch: 'radarsearch'
   }
+  service:any;
 
   constructor(public http : Http) {
   }
@@ -40,25 +41,42 @@ export class GooglePlaceService {
   /*
     Use params like this:
     let parmUrl = {
-      location: '-33.8670522,151.1957362',
-      radius: '500',
+      location: {
+        lat: -33.8670522,
+        lng: 151.1957362
+      },
+      radius: '500'
       type: 'food',
       name: 'cruise'
     }
     getData('nearbysearch', parmUrl)
   */
-  getData(url:string,parmUrl:Object):Observable<Response>{
+  getData(url:string,parmUrl:any){
 
-    let paramsReady:string = Object.keys(parmUrl).map((key)=>{
-      return `${encodeURIComponent(key)}=${encodeURIComponent(parmUrl[key])}`;
-    }).join('&');
-    let queryUrl:string = `${this.urlEnpoint[url]}${paramsReady}&key=${this.apiKey}`;
+    // let paramsReady:string = Object.keys(parmUrl).map((key)=>{
+    //   return `${encodeURIComponent(key)}=${encodeURIComponent(parmUrl[key])}`;
+    // }).join('&');
 
-    return this.http.get(queryUrl)
-      .map(res => res.json())
-      .map( res => {
-        //console.log(res);
-        return res.results
-      })
+    this.service = new google.maps.places.PlacesService(document.createElement('div'));
+    let position = new google.maps.LatLng(parmUrl.location.lat,parmUrl.location.lng);
+    let request = {
+      location: position,
+      radius: parmUrl.radius
+    };
+    console.log('request->', url, request, parmUrl)
+    let map = new google.maps.Map(document.createElement('div'))
+    // return promise
+    return new Promise((resolve,reject)=>{
+      this.service[this.apiEnpoint[url]](request, (results,status) =>{
+        if (status == google.maps.places.PlacesServiceStatus.OK) {
+          // resolve promise with results on OK status
+          resolve(results);
+        }else {
+          // reject promise otherwise
+          reject(status);
+        }
+      });
+    });
   }
+
 }
