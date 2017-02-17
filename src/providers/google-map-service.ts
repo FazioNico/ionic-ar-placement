@@ -3,7 +3,7 @@
 * @Date:   06-02-2017
 * @Email:  contact@nicolasfazio.ch
 * @Last modified by:   webmaster-fazio
-* @Last modified time: 15-02-2017
+* @Last modified time: 17-02-2017
 */
 
 import { Injectable, EventEmitter } from '@angular/core';
@@ -130,8 +130,30 @@ export class GoogleMapService extends EventEmitter<any> {
 
   // add marker to map and in array
   addMarker(i, pin){
-    var marker = new google.maps.Marker({position: new google.maps.LatLng(pin[i].lat, pin[i].lng), map: this.map, title: pin[i].name});
-  	this.bounds.extend(new google.maps.LatLng(pin[i].lat, pin[i].lng));
+    if(pin[i].icon){
+      var image = {
+        url: pin[i].icon,
+        size: new google.maps.Size(71, 71),
+        origin: new google.maps.Point(0, 0),
+        anchor: new google.maps.Point(17, 34),
+        scaledSize: new google.maps.Size(25, 25)
+      };
+      var marker = new google.maps.Marker({
+        position: new google.maps.LatLng(pin[i].lat, pin[i].lng),
+        map: this.map,
+        title: pin[i].name,
+        icon: image
+      });
+    }
+    else {
+      var marker = new google.maps.Marker({
+        position: new google.maps.LatLng(pin[i].lat, pin[i].lng),
+        map: this.map,
+        title: pin[i].name
+      });
+    }
+
+    this.bounds.extend(new google.maps.LatLng(pin[i].lat, pin[i].lng));
   	this.markersArray.push(marker);
 
     // automatiquement du zoom de la carte afin que celle-ci affiche

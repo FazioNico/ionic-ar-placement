@@ -3,7 +3,7 @@
 * @Date:   05-02-2017
 * @Email:  contact@nicolasfazio.ch
 * @Last modified by:   webmaster-fazio
-* @Last modified time: 16-02-2017
+* @Last modified time: 17-02-2017
 */
 
 import { Component, ViewChild, ElementRef } from '@angular/core';

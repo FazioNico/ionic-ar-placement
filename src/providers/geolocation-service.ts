@@ -3,7 +3,7 @@
 * @Date:   06-02-2017
 * @Email:  contact@nicolasfazio.ch
 * @Last modified by:   webmaster-fazio
-* @Last modified time: 14-02-2017
+* @Last modified time: 17-02-2017
 */
 
 import { Injectable, EventEmitter } from '@angular/core';
@@ -27,16 +27,20 @@ export class GeolocationService extends EventEmitter<Object> {
   }
 
   startGeolocation():void {
-    this.watchGeoID = Geolocation.watchPosition();
-    this.watchGeoID.subscribe(
-      (data:Geoposition) => {
-        // data can be a set of coordinates, or an error (if an error occurred).
-        // data.coords.latitude
-        // data.coords.longitude
-        this.onGeoSuccess(data)
-      },
-      (err:PositionError) => this.onGeoError('startGeolocation Error: location not available')
-    );
+    Geolocation.getCurrentPosition().then(pos => {
+      this.watchGeoID = Geolocation.watchPosition();
+      this.watchGeoID.subscribe(
+        (data:Geoposition) => {
+          // data can be a set of coordinates, or an error (if an error occurred).
+          // data.coords.latitude
+          // data.coords.longitude
+          this.onGeoSuccess(data)
+        },
+        (err:PositionError) => this.onGeoError('startGeolocation Error: location not available')
+      );
+    }).catch(err=> {this.onGeoError('startGeolocation Error: location not available')});
+
+
   }
 
   // Stop watching the geolocation
@@ -64,10 +68,14 @@ export class GeolocationService extends EventEmitter<Object> {
 
   // onError: Failed to get the location
   onGeoError(err:any):void {
+    console.log(err)
     this.emit({
       error: err
     });
-    this.stopGeolocation() // TODO: check if trow error on enable
+    if(this.watchGeoID){
+      this.stopGeolocation() // TODO: check if trow error on enable
+    }
+
   }
 
 }
