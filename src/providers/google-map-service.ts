@@ -25,6 +25,7 @@ export class GoogleMapService extends EventEmitter<any> {
   markersArray:any[] = [];
   bounds:any;
   map:any;
+  infoWindow:any;
 
   constructor() {
     super()
@@ -101,6 +102,7 @@ export class GoogleMapService extends EventEmitter<any> {
     setTimeout(()=>{
       console.log('google API init-> ', google)
       this.bounds = new google.maps.LatLngBounds();
+      this.infoWindow = new google.maps.InfoWindow();
       this.emit({
         result: true,
         message: 'google Map API init'
@@ -152,6 +154,17 @@ export class GoogleMapService extends EventEmitter<any> {
         title: pin[i].name
       });
     }
+    // add window box on click
+    let contentString = `
+      <div>
+        <p><b>${pin[i].name}</b></p>
+        <hr/>
+        <p>${pin[i].vicinity}</p>
+      </div>`;
+    google.maps.event.addListener(marker, 'click', ()=> {
+      this.infoWindow.setContent(contentString);
+      this.infoWindow.open(this.map, marker);
+    });
 
     this.bounds.extend(new google.maps.LatLng(pin[i].lat, pin[i].lng));
   	this.markersArray.push(marker);
