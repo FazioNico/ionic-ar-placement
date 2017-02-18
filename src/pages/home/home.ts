@@ -55,7 +55,7 @@ export class HomePage {
     });
   }
 
-  initezAR(){
+  initezAR():void{
     let win:any = window;
     if (win.ezar) {
         let ezar: any = win.ezar;
@@ -131,7 +131,7 @@ export class HomePage {
     )
   }
 
-  compassResult(data){
+  compassResult(data):void{
     //console.log('compassResult-> ', data)
     if(data.error){
       this.log.push("Error onCompas");
@@ -146,7 +146,7 @@ export class HomePage {
 
   /* Bof - Geolocation Methode */
   // startGeolocation with GeolocationService Observable
-  startGeolocation(){
+  startGeolocation():void{
     this._geolocationService.startGeolocation()
     this._geolocationService.subscribe(
       data => {
@@ -159,7 +159,7 @@ export class HomePage {
   }
 
   // Geolocation onSuccess: Get the current location
-  geolocationResult(data) {
+  geolocationResult(data):void {
     //console.log('geolocationResult',data);
     if(!data.position) {
       this.log.push("Error onGeolocation")
@@ -167,7 +167,7 @@ export class HomePage {
     }
     // test if user have move more than 5 meters
     if(this.userLocation){
-      let distance = this.calculateDistance(this.userLocation.position.lat, this.userLocation.position.lng, data.position.lat, data.position.lng);
+      let distance:number = this.calculateDistance(this.userLocation.position.lat, this.userLocation.position.lng, data.position.lat, data.position.lng);
       console.log('check distance-> ',distance )
       if (distance <= 15) {
         // Stop load data
@@ -185,7 +185,7 @@ export class HomePage {
   /* Eof - Geolocation Methode */
 
   /* Bof - googleMap Methode */
-  loadGoogleSDK(){
+  loadGoogleSDK():void{
     this._googleMapService.loadGoogleMap()
     this._googleMapService.subscribe(
       data => {
@@ -208,7 +208,7 @@ export class HomePage {
     )
   }
 
-  loadGoogleMapData(userPosition){
+  loadGoogleMapData(userPosition):void{
     console.log('loadGoogleMapData')
     // check if map is alerady loaded and in case update user position
     // with updateUserMarkerPos(this.userLocation.position)
@@ -227,28 +227,24 @@ export class HomePage {
         this.addToDOMList(i); // add to google map page liste item
         this._googleMapService.addMarker(i,this.pin); // google map markers placement
     }
-
   }
 
-  addToDOMList(i){
-    let listItems = document.getElementsByName('listItems')
-    for (let j = 0; j < listItems.length; j++) {
-        listItems[j].insertAdjacentHTML('beforeend', `<div class="item">${this.pin[i].name}</div>`)
-    }
+  addToDOMList(i:number):void{
+    // TODO
   }
   /* Eof - googleMap Methode */
 
 
   /* ########################### */
   /* Bof - HomePage Core Methode */
-  calculateDirection(degree){
+  calculateDirection(degree:number):void{
     //console.log('calculateDirection degree-> ', degree)
-    let detected = 0;
+    let detected:number = 0;
     this.spots = []
     //document.getElementById('spot').innerHTML = '';
     for(var i=0;i<this.pin.length;i++){
         if(Math.abs(this.pin[i].bearing - degree) <= 20){
-            let away, fontSize, fontColor;
+            let away:number, fontSize:string, fontColor:string;
             // varry font size based on distance from gps location
             if(this.pin[i].distance.miles>1500 || this.pin[i].distance.meter > 2414010){
                 away = this.pin[i].distance;
@@ -263,8 +259,8 @@ export class HomePage {
                 fontSize = "30";
                 fontColor = "#eee";
             }
-            let move = ((this.pin[i].bearing - degree) * 5)+50;
-            let spot = {
+            let move:number = ((this.pin[i].bearing - degree) * 5)+50;
+            let spot:Object = {
               id: i,
               pin: this.pin[i],
               fontSize: fontSize,
@@ -286,10 +282,10 @@ export class HomePage {
   }
 
   // get data from API and store in array, add to list view and create markers on map, calculate
-  loadData(position){
+  loadData(position):void{
       console.log('load data position-> ', position);
       // set params query
-      let parmUrl = {
+      let parmUrl:Object = {
         location: {
           lat: position.lat,
           lng: position.lng
@@ -328,23 +324,23 @@ export class HomePage {
   }
 
   // calulate distance and bearing value for each of the points wrt gps lat/lng
-  relativePosition(pin,position){
-      let pinLat = pin.lat;
-      let pinLng = pin.lng;
-      let dLat = (position.lat-pinLat)* Math.PI / 180;
-      let dLon = (position.lng-pinLng)* Math.PI / 180;
-      let lat1 = pinLat * Math.PI / 180;
-      let lat2 = position.lat * Math.PI / 180;
-      let y = Math.sin(dLon) * Math.cos(lat2);
-      let x = Math.cos(lat1)*Math.sin(lat2) - Math.sin(lat1)*Math.cos(lat2)*Math.cos(dLon);
-      let bearing = Math.atan2(y, x) * 180 / Math.PI;
+  relativePosition(pin,position):void{
+      let pinLat:number = pin.lat;
+      let pinLng:number = pin.lng;
+      let dLat:number = (position.lat-pinLat)* Math.PI / 180;
+      let dLon:number = (position.lng-pinLng)* Math.PI / 180;
+      let lat1:number = pinLat * Math.PI / 180;
+      let lat2:number = position.lat * Math.PI / 180;
+      let y:number = Math.sin(dLon) * Math.cos(lat2);
+      let x:number = Math.cos(lat1)*Math.sin(lat2) - Math.sin(lat1)*Math.cos(lat2)*Math.cos(dLon);
+      let bearing:number = Math.atan2(y, x) * 180 / Math.PI;
       bearing = bearing + 180;
       pin['bearing'] = bearing;
 
-      let a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.sin(dLon/2) * Math.sin(dLon/2) * Math.cos(lat1) * Math.cos(lat2);
-      let c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      let a:number = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.sin(dLon/2) * Math.sin(dLon/2) * Math.cos(lat1) * Math.cos(lat2);
+      let c:number = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 
-      let distance = {
+      let distance:Object = {
         miles: 3958.76  * c,
         meter: (3958.76  * c) * 1609.34
       };
@@ -352,7 +348,7 @@ export class HomePage {
   }
 
   // Calculates the distance between two GPS points
-  calculateDistance(lat1, long1, lat2, long2) {
+  calculateDistance(lat1:number, long1:number, lat2:number, long2:number):number {
       return 11*10000*Math.sqrt(Math.pow(lat1-lat2,2)+Math.pow(long1-long2,2))
   }
 
