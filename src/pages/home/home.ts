@@ -3,7 +3,7 @@
 * @Date:   05-02-2017
 * @Email:  contact@nicolasfazio.ch
 * @Last modified by:   webmaster-fazio
-* @Last modified time: 18-02-2017
+* @Last modified time: 19-02-2017
 */
 
 import { Component, ViewChild, ElementRef } from '@angular/core';
@@ -22,17 +22,8 @@ declare var google;
   templateUrl: 'home.html'
 })
 export class HomePage {
-  pin:any = [
-      //{"name":"Miami", "lat":"25.788969", "lng":"-80.226439"},
-      // {"name":"École de Commerce Emilie Gourd", "lat":"46.1937510", "lng":"6.1680810"},
-      // {"name":"Migros Rieu", "lat":"46.1919780", "lng":"6.1640420"},
-      // {"name":"Ateliers Nomades", "lat":"46.1910980", "lng":"6.1357960"},
-      // {"name":"Denner Rieu", "lat":"46.1940520", "lng":"6.1660530"},
-      // {"name":"La Florance", "lat":"46.1917560", "lng":"6.1690610"}
-  ];
+  pin:any[] = [];
   dataStatus:number = 0;
-
-  ///
   log:any[] = [];
   userAcceleration:any;
   userLocation:any;
@@ -62,11 +53,10 @@ export class HomePage {
       this.detectAccelerometer();
       this.startCompass(); // need geoposition data ready
     });
-
   }
 
   initezAR(){
-    let win: any = window;
+    let win:any = window;
     if (win.ezar) {
         let ezar: any = win.ezar;
         ezar.initializeVideoOverlay(
@@ -75,9 +65,11 @@ export class HomePage {
             },
             (err)=> {
             //alert('unable to init ezar: ' + err);
+            console.log('unable to init ezar: ' + err);
         });
     } else {
         //alert('Unable to detect the ezAR plugin');
+        console.log('Unable to detect the ezAR plugin');
     }
   }
 
@@ -102,12 +94,11 @@ export class HomePage {
       return;
     }
     // display result
-    //let acceleration = data;
     // assign data to display
     this.userAcceleration = data;
     console.log('userAcceleration-> ', data)
     if(this.userAcceleration.y > 5){
-        // TODO: stay on AR page
+        // stay on AR page
         if(this.azElement.nativeElement.className.indexOf('fadeOut') > -1){
           this.azElement.nativeElement.classList.remove('fadeOut')
           this.azElement.nativeElement.classList.add('fadeIn')
@@ -116,7 +107,7 @@ export class HomePage {
           this.topElement.nativeElement.classList.add('fadeOut')
         }
     } else {
-        // TODO: pop Google Map Page
+        // pop Google Map Page
         if(this.topElement.nativeElement.className.indexOf('fadeOut') > -1){
           this.topElement.nativeElement.classList.remove('fadeOut')
           this.topElement.nativeElement.classList.add('fadeIn')
@@ -148,8 +139,6 @@ export class HomePage {
     }
     // print data result
     this.userDirection = data.direction;
-    //document.getElementById('compass').innerHTML = data.degree + "<br>" + data.direction;
-    //document.getElementById('direction').innerHTML = data.direction;
     // calculateDirection of each pinPoints with data.degree
     this.calculateDirection(data.degree);
   }
@@ -178,18 +167,16 @@ export class HomePage {
     }
     // test if user have move more than 5 meters
     if(this.userLocation){
-      var distance = this.calculateDistance(this.userLocation.position.lat, this.userLocation.position.lng, data.position.lat, data.position.lng);
+      let distance = this.calculateDistance(this.userLocation.position.lat, this.userLocation.position.lng, data.position.lat, data.position.lng);
       console.log('check distance-> ',distance )
       if (distance <= 15) {
         // Stop load data
-        console.log('stop load data',distance )
+        console.log('stop load data')
         return;
       }
     }
-
     // asign user location to display
     this.userLocation = data;
-    //document.getElementById('geolocation').innerHTML = 'Latitude: ' + data.position.lat + '<br />' + 'Longitude: ' + data.position.lng;
     this.loadData(data.position)
     if(google){
       this.loadGoogleMapData(data.position)
@@ -223,16 +210,9 @@ export class HomePage {
 
   loadGoogleMapData(userPosition){
     console.log('loadGoogleMapData')
-    // TODO: check if map is alerady loaded and in case update user position
+    // check if map is alerady loaded and in case update user position
     // with updateUserMarkerPos(this.userLocation.position)
     // else load & set all Gmap data
-    // console.log('create map with all position-> ', this._googleMapService.gmapEnable)
-    // this._googleMapService.setupMap(userPosition,this.mapElement); // TODO need native geoposition ready
-    // this._googleMapService.addUserMarker(userPosition) // add blue gps marker for user position
-    // for(var i=0; i< this.pin.length; i++){
-    //     this.addToDOMList(i); // add to google map page liste item
-    //     this._googleMapService.addMarker(i,this.pin); // google map markers placement
-    // }
     if(this._googleMapService.gmapEnable === false){
       console.log('create user position on map-> ', this._googleMapService.gmapEnable)
       this._googleMapService.setupMap(userPosition,this.mapElement); // TODO need native geoposition ready
@@ -243,7 +223,6 @@ export class HomePage {
       this._googleMapService.updateUserMarkerPos(userPosition)
     }
     console.log('add all places position-> ', this._googleMapService.gmapEnable)
-    //this._googleMapService.addUserMarker(userPosition) // add blue gps marker for user position
     for(var i=0; i< this.pin.length; i++){
         this.addToDOMList(i); // add to google map page liste item
         this._googleMapService.addMarker(i,this.pin); // google map markers placement
