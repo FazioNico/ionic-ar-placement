@@ -26,6 +26,8 @@ export class GoogleMapService extends EventEmitter<any> {
   bounds:any;
   map:any;
   infoWindow:any;
+  gpsUserMarker:any;
+  gmapEnable: boolean = false;
 
   constructor() {
     super()
@@ -117,6 +119,7 @@ export class GoogleMapService extends EventEmitter<any> {
       zoom: 8
     });
     mapElement.nativeElement.style.height = `${window.innerHeight}px`;
+    this.gmapEnable = true;
   }
 
   // add blue gps marker for user position
@@ -125,9 +128,9 @@ export class GoogleMapService extends EventEmitter<any> {
     this.bounds = new google.maps.LatLngBounds();
     // add blue gps marker
     var icon = new google.maps.MarkerImage('http://www.google.com/intl/en_us/mapfiles/ms/micons/blue-dot.png',new google.maps.Size(30, 28),new google.maps.Point(0,0),new google.maps.Point(9, 28));
-    var gpsMarker = new google.maps.Marker({position: new google.maps.LatLng(position.lat, position.lng), map: this.map, title: "My Position", icon:icon});
+    this.gpsUserMarker = new google.maps.Marker({position: new google.maps.LatLng(position.lat, position.lng), map: this.map, title: "My Position", icon:icon});
     this.bounds.extend(new google.maps.LatLng(position.lat, position.lng));
-    this.markersArray.push(gpsMarker);
+    this.markersArray.push(this.gpsUserMarker);
   }
 
   // add marker to map and in array
@@ -144,14 +147,16 @@ export class GoogleMapService extends EventEmitter<any> {
         position: new google.maps.LatLng(pin[i].lat, pin[i].lng),
         map: this.map,
         title: pin[i].name,
-        icon: image
+        icon: image,
+        animation: google.maps.Animation.DROP
       });
     }
     else {
       var marker = new google.maps.Marker({
         position: new google.maps.LatLng(pin[i].lat, pin[i].lng),
         map: this.map,
-        title: pin[i].name
+        title: pin[i].name,
+        animation: google.maps.Animation.DROP
       });
     }
     // add window box on click
@@ -174,5 +179,9 @@ export class GoogleMapService extends EventEmitter<any> {
     this.map.fitBounds(this.bounds);
   }
 
+  updateUserMarkerPos(position:any):void{
+    let newLatLng = new google.maps.LatLng(position.lat, position.lng);
+    this.gpsUserMarker.setPosition(newLatLng);
+  }
 
 }

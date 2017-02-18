@@ -3,17 +3,10 @@
 * @Date:   14-02-2017
 * @Email:  contact@nicolasfazio.ch
 * @Last modified by:   webmaster-fazio
-* @Last modified time: 16-02-2017
+* @Last modified time: 18-02-2017
 */
 
-
-
 import { Injectable } from '@angular/core';
-import { Http, RequestOptions, Headers, Response } from '@angular/http';
-import { Observable }   from 'rxjs/Observable';
-import 'rxjs/add/operator/map';
-import 'rxjs/add/operator/filter';
-
 import { GPLACE_API_KEY } from './apikey-config';
 
 declare var google;
@@ -28,14 +21,14 @@ declare var google;
 export class GooglePlaceService {
 
   apiKey:string = GPLACE_API_KEY;
-  apiEnpoint:any = {
+  apiEnpoint:Object = {
     nearbysearch: 'nearbySearch',
     textsearch: 'textSearch',
     radarSearch: 'radarsearch'
   }
   service:any;
 
-  constructor(public http : Http) {
+  constructor() {
   }
 
   /*
@@ -51,26 +44,41 @@ export class GooglePlaceService {
     }
     getData('nearbysearch', parmUrl)
   */
-  getData(url:string,parmUrl:any){
+  getData(url:string,parmUrl:any):Promise<any>{
 
     // let paramsReady:string = Object.keys(parmUrl).map((key)=>{
     //   return `${encodeURIComponent(key)}=${encodeURIComponent(parmUrl[key])}`;
     // }).join('&');
 
     this.service = new google.maps.places.PlacesService(document.createElement('div'));
-    let position = new google.maps.LatLng(parmUrl.location.lat,parmUrl.location.lng);
-    let request = {
+    let position:any = new google.maps.LatLng(parmUrl.location.lat,parmUrl.location.lng);
+    let request:Object = {
       location: position,
       radius: parmUrl.radius
     };
     console.log('request->', url, request, parmUrl)
-    let map = new google.maps.Map(document.createElement('div'))
     // return promise
     return new Promise((resolve,reject)=>{
       this.service[this.apiEnpoint[url]](request, (results,status) =>{
         if (status == google.maps.places.PlacesServiceStatus.OK) {
           // resolve promise with results on OK status
-          resolve(results);
+          // formate place element with geoposition
+          let places:Object[] = [];
+          results.map(place => {
+            place.lat = place.geometry.location.lat(),
+            place.lng = place.geometry.location.lng()
+            return place;
+          })
+          .filter( place => {
+            // remove place city name
+            return place.types.indexOf("locality") === -1;
+          })
+          .filter( place => {
+            // remove place sub locality name
+            return place.types.indexOf('sublocality') === -1;
+          })
+          .map(place => places.push(place))
+          resolve(places);
         }else {
           // reject promise otherwise
           reject(status);

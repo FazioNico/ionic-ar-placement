@@ -3,7 +3,7 @@
 * @Date:   05-02-2017
 * @Email:  contact@nicolasfazio.ch
 * @Last modified by:   webmaster-fazio
-* @Last modified time: 17-02-2017
+* @Last modified time: 18-02-2017
 */
 
 import { Component, ViewChild, ElementRef } from '@angular/core';
@@ -223,12 +223,32 @@ export class HomePage {
 
   loadGoogleMapData(userPosition){
     console.log('loadGoogleMapData')
-    this._googleMapService.setupMap(userPosition,this.mapElement); // TODO need native geoposition ready
-    this._googleMapService.addUserMarker(userPosition) // add blue gps marker for user position
+    // TODO: check if map is alerady loaded and in case update user position
+    // with updateUserMarkerPos(this.userLocation.position)
+    // else load & set all Gmap data
+    // console.log('create map with all position-> ', this._googleMapService.gmapEnable)
+    // this._googleMapService.setupMap(userPosition,this.mapElement); // TODO need native geoposition ready
+    // this._googleMapService.addUserMarker(userPosition) // add blue gps marker for user position
+    // for(var i=0; i< this.pin.length; i++){
+    //     this.addToDOMList(i); // add to google map page liste item
+    //     this._googleMapService.addMarker(i,this.pin); // google map markers placement
+    // }
+    if(this._googleMapService.gmapEnable === false){
+      console.log('create user position on map-> ', this._googleMapService.gmapEnable)
+      this._googleMapService.setupMap(userPosition,this.mapElement); // TODO need native geoposition ready
+      this._googleMapService.addUserMarker(userPosition) // add blue gps marker for user position
+    }
+    else {
+      console.log('update user position-> ', this._googleMapService.gmapEnable)
+      this._googleMapService.updateUserMarkerPos(userPosition)
+    }
+    console.log('add all places position-> ', this._googleMapService.gmapEnable)
+    //this._googleMapService.addUserMarker(userPosition) // add blue gps marker for user position
     for(var i=0; i< this.pin.length; i++){
         this.addToDOMList(i); // add to google map page liste item
         this._googleMapService.addMarker(i,this.pin); // google map markers placement
     }
+
   }
 
   addToDOMList(i){
@@ -289,6 +309,7 @@ export class HomePage {
   // get data from API and store in array, add to list view and create markers on map, calculate
   loadData(position){
       console.log('load data position-> ', position);
+      // set params query
       let parmUrl = {
         location: {
           lat: position.lat,
@@ -296,26 +317,19 @@ export class HomePage {
         },
         radius: '500'
       }
+      // run request query with params
       this._googlePlaceService.getData('nearbysearch', parmUrl)
         .then((response:any)=>{
-          // TODO test this .then()
           // clean previous data array
           this.pin = []
           return response
         })
-        .then( (response:any) => {
-          // formate place element with geoposition
+        .then((response:any) => {
           response.map(place => {
-            place.lat = place.geometry.location.lat(),
-            place.lng = place.geometry.location.lng()
-            return place;
-          })
-          .map(place => {
             console.log(place)
             // add new place in data array
             this.pin.push(place)
           })
-          return response
         })
         .then(_=>{
           // calacule distance relative between user position and each pin element
@@ -332,7 +346,6 @@ export class HomePage {
         .then(_=>{
           this.dataStatus = 1;
         })
-
   }
 
   // calulate distance and bearing value for each of the points wrt gps lat/lng
