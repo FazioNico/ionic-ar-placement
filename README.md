@@ -3,20 +3,18 @@
 @Date:   08-02-2017
 @Email:  contact@nicolasfazio.ch
 @Last modified by:   webmaster-fazio
-@Last modified time: 13-02-2017
+@Last modified time: 19-02-2017
 -->
 
 # Ionic 2 AR Geo-located
-Using augmented reality in a Ionic 2 Framework multi-platform application to display geo points.
-
-<b>!! Warning !! Work in proccess...</b>
+Using augmented reality in a Ionic 2 Framework multi-platform application to display Google Places API pins around user.
 
 ## Overview
-This application using [ezAR](https://www.ezartech.com/) to display a geo coordonnates point list in a augmented reality frame.
+This application using [ezAR](https://www.ezartech.com/) to display a Google Places API geo coordonnates point list around user in a augmented reality frame.
 
 Each geo coordonnates point will display on screen only if the mobile's user is oriented in the good direction.
 
-This app is inspired by this ezAR [cities project](https://github.com/ezartech/ezar-cities), and i'm currently integrate into a Ionic Angular Application.
+This app is a integration of this ezAR [cities project](https://github.com/ezartech/ezar-cities), into a Ionic 2 Framework
 
 ## Screenshot
 <img src="https://raw.githubusercontent.com/ezartech/ezar-cities/master/screenshot1.jpg">
