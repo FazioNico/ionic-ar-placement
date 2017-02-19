@@ -3,7 +3,7 @@
 * @Date:   05-02-2017
 * @Email:  contact@nicolasfazio.ch
 * @Last modified by:   webmaster-fazio
-* @Last modified time: 13-02-2017
+* @Last modified time: 19-02-2017
 */
 
 import { Component, ViewChild, ElementRef } from '@angular/core';
@@ -13,6 +13,7 @@ import { AccelerometerService } from '../../providers/accelerometer-service';
 import { CompassService } from '../../providers/compass-service';
 import { GeolocationService } from '../../providers/geolocation-service';
 import { GoogleMapService } from '../../providers/google-map-service';
+import { GooglePlaceService } from '../../providers/google-place-service';
 
 declare var google;
 
@@ -21,17 +22,8 @@ declare var google;
   templateUrl: 'home.html'
 })
 export class HomePage {
-  pin:any = [
-      //{"name":"Miami", "lat":"25.788969", "lng":"-80.226439"},
-      {"name":"École de Commerce Emilie Gourd", "lat":"46.1937510", "lng":"6.1680810"},
-      {"name":"Migros Rieu", "lat":"46.1919780", "lng":"6.1640420"},
-      {"name":"Ateliers Nomades", "lat":"46.1910980", "lng":"6.1357960"},
-      {"name":"Denner Rieu", "lat":"46.1940520", "lng":"6.1660530"},
-      {"name":"La Florance", "lat":"46.1917560", "lng":"6.1690610"}
-  ];
+  pin:any[] = [];
   dataStatus:number = 0;
-
-  ///
   log:any[] = [];
   userAcceleration:any;
   userLocation:any;
@@ -48,7 +40,8 @@ export class HomePage {
     private _accelerometerService: AccelerometerService,
     private _compassService: CompassService,
     private _geolocationService: GeolocationService,
-    private _googleMapService: GoogleMapService
+    private _googleMapService: GoogleMapService,
+    private _googlePlaceService: GooglePlaceService
   ) {
     this.loadGoogleSDK();
     platform.ready().then(() => {
@@ -60,11 +53,10 @@ export class HomePage {
       this.detectAccelerometer();
       this.startCompass(); // need geoposition data ready
     });
-
   }
 
-  initezAR(){
-    let win: any = window;
+  initezAR():void{
+    let win:any = window;
     if (win.ezar) {
         let ezar: any = win.ezar;
         ezar.initializeVideoOverlay(
@@ -73,9 +65,11 @@ export class HomePage {
             },
             (err)=> {
             //alert('unable to init ezar: ' + err);
+            console.log('unable to init ezar: ' + err);
         });
     } else {
         //alert('Unable to detect the ezAR plugin');
+        console.log('Unable to detect the ezAR plugin');
     }
   }
 
@@ -100,12 +94,11 @@ export class HomePage {
       return;
     }
     // display result
-    //let acceleration = data;
     // assign data to display
     this.userAcceleration = data;
     console.log('userAcceleration-> ', data)
     if(this.userAcceleration.y > 5){
-        // TODO: stay on AR page
+        // stay on AR page
         if(this.azElement.nativeElement.className.indexOf('fadeOut') > -1){
           this.azElement.nativeElement.classList.remove('fadeOut')
           this.azElement.nativeElement.classList.add('fadeIn')
@@ -114,7 +107,7 @@ export class HomePage {
           this.topElement.nativeElement.classList.add('fadeOut')
         }
     } else {
-        // TODO: pop Google Map Page
+        // pop Google Map Page
         if(this.topElement.nativeElement.className.indexOf('fadeOut') > -1){
           this.topElement.nativeElement.classList.remove('fadeOut')
           this.topElement.nativeElement.classList.add('fadeIn')
@@ -138,7 +131,7 @@ export class HomePage {
     )
   }
 
-  compassResult(data){
+  compassResult(data):void{
     //console.log('compassResult-> ', data)
     if(data.error){
       this.log.push("Error onCompas");
@@ -146,8 +139,6 @@ export class HomePage {
     }
     // print data result
     this.userDirection = data.direction;
-    document.getElementById('compass').innerHTML = data.degree + "<br>" + data.direction;
-    //document.getElementById('direction').innerHTML = data.direction;
     // calculateDirection of each pinPoints with data.degree
     this.calculateDirection(data.degree);
   }
@@ -155,7 +146,7 @@ export class HomePage {
 
   /* Bof - Geolocation Methode */
   // startGeolocation with GeolocationService Observable
-  startGeolocation(){
+  startGeolocation():void{
     this._geolocationService.startGeolocation()
     this._geolocationService.subscribe(
       data => {
@@ -168,15 +159,24 @@ export class HomePage {
   }
 
   // Geolocation onSuccess: Get the current location
-  geolocationResult(data) {
+  geolocationResult(data):void {
     //console.log('geolocationResult',data);
     if(!data.position) {
       this.log.push("Error onGeolocation")
       return
     }
+    // test if user have move more than 5 meters
+    if(this.userLocation){
+      let distance:number = this.calculateDistance(this.userLocation.position.lat, this.userLocation.position.lng, data.position.lat, data.position.lng);
+      console.log('check distance-> ',distance )
+      if (distance <= 15) {
+        // Stop load data
+        console.log('stop load data')
+        return;
+      }
+    }
     // asign user location to display
     this.userLocation = data;
-    //document.getElementById('geolocation').innerHTML = 'Latitude: ' + data.position.lat + '<br />' + 'Longitude: ' + data.position.lng;
     this.loadData(data.position)
     if(google){
       this.loadGoogleMapData(data.position)
@@ -185,7 +185,7 @@ export class HomePage {
   /* Eof - Geolocation Methode */
 
   /* Bof - googleMap Methode */
-  loadGoogleSDK(){
+  loadGoogleSDK():void{
     this._googleMapService.loadGoogleMap()
     this._googleMapService.subscribe(
       data => {
@@ -208,41 +208,49 @@ export class HomePage {
     )
   }
 
-  loadGoogleMapData(userPosition){
+  loadGoogleMapData(userPosition):void{
     console.log('loadGoogleMapData')
-    this._googleMapService.setupMap(userPosition,this.mapElement); // TODO need native geoposition ready
-    this._googleMapService.addUserMarker(userPosition) // add blue gps marker for user position
+    // check if map is alerady loaded and in case update user position
+    // with updateUserMarkerPos(this.userLocation.position)
+    // else load & set all Gmap data
+    if(this._googleMapService.gmapEnable === false){
+      console.log('create user position on map-> ', this._googleMapService.gmapEnable)
+      this._googleMapService.setupMap(userPosition,this.mapElement); // TODO need native geoposition ready
+      this._googleMapService.addUserMarker(userPosition) // add blue gps marker for user position
+    }
+    else {
+      console.log('update user position-> ', this._googleMapService.gmapEnable)
+      this._googleMapService.updateUserMarkerPos(userPosition)
+    }
+    console.log('add all places position-> ', this._googleMapService.gmapEnable)
     for(var i=0; i< this.pin.length; i++){
         this.addToDOMList(i); // add to google map page liste item
         this._googleMapService.addMarker(i,this.pin); // google map markers placement
     }
   }
 
-  addToDOMList(i){
-    let listItems = document.getElementsByName('listItems')
-    for (let j = 0; j < listItems.length; j++) {
-        listItems[j].insertAdjacentHTML('beforeend', `<div class="item">${this.pin[i].name}</div>`)
-    }
+  addToDOMList(i:number):void{
+    // TODO
   }
   /* Eof - googleMap Methode */
 
 
   /* ########################### */
   /* Bof - HomePage Core Methode */
-  calculateDirection(degree){
+  calculateDirection(degree:number):void{
     //console.log('calculateDirection degree-> ', degree)
-    let detected = 0;
+    let detected:number = 0;
     this.spots = []
     //document.getElementById('spot').innerHTML = '';
     for(var i=0;i<this.pin.length;i++){
         if(Math.abs(this.pin[i].bearing - degree) <= 20){
-            let away, fontSize, fontColor;
+            let away:number, fontSize:string, fontColor:string;
             // varry font size based on distance from gps location
-            if(this.pin[i].distance.feet>1500 || this.pin[i].distance.meter > 457){
+            if(this.pin[i].distance.miles>1500 || this.pin[i].distance.meter > 2414010){
                 away = this.pin[i].distance;
                 fontSize = "16";
                 fontColor = "#ccc";
-            } else if(this.pin[i].distance.feet >500 || this.pin[i].distance.meter > 131){
+            } else if(this.pin[i].distance.miles >500 || this.pin[i].distance.meter > 804670){
                 away = this.pin[i].distance;
                 fontSize = "24";
                 fontColor = "#ddd";
@@ -251,8 +259,8 @@ export class HomePage {
                 fontSize = "30";
                 fontColor = "#eee";
             }
-            let move = ((this.pin[i].bearing - degree) * 5)+50;
-            let spot = {
+            let move:number = ((this.pin[i].bearing - degree) * 5)+50;
+            let spot:Object = {
               id: i,
               pin: this.pin[i],
               fontSize: fontSize,
@@ -274,38 +282,76 @@ export class HomePage {
   }
 
   // get data from API and store in array, add to list view and create markers on map, calculate
-  loadData(position){
+  loadData(position):void{
       console.log('load data position-> ', position);
-      // calacule distance relative between user position and each pin element
-      for(var i=0; i< this.pin.length; i++){
-          this.relativePosition(i,position);
+      // set params query
+      let parmUrl:Object = {
+        location: {
+          lat: position.lat,
+          lng: position.lng
+        },
+        radius: '500'
       }
-      this.dataStatus = 1;
+      // run request query with params
+      this._googlePlaceService.getData('nearbysearch', parmUrl)
+        .then((response:any)=>{
+          // clean previous data array
+          this.pin = []
+          return response
+        })
+        .then((response:any) => {
+          response.map(place => {
+            console.log(place)
+            // add new place in data array
+            this.pin.push(place)
+          })
+        })
+        .then(_=>{
+          // calacule distance relative between user position and each pin element
+          this.pin.map(place => {
+            this.relativePosition(place,position);
+          })
+        })
+        .then(_=> {
+          /// create marker
+          if(this._geolocationService.myLat && this._geolocationService.myLng){
+            this.loadGoogleMapData({lat: this._geolocationService.myLat,lng: this._geolocationService.myLng});
+          }
+        })
+        .then(_=>{
+          this.dataStatus = 1;
+        })
   }
 
   // calulate distance and bearing value for each of the points wrt gps lat/lng
-  relativePosition(i,position){
-      let pinLat = this.pin[i].lat;
-      let pinLng = this.pin[i].lng;
-      let dLat = (position.lat-pinLat)* Math.PI / 180;
-      let dLon = (position.lng-pinLng)* Math.PI / 180;
-      let lat1 = pinLat * Math.PI / 180;
-      let lat2 = position.lat * Math.PI / 180;
-      let y = Math.sin(dLon) * Math.cos(lat2);
-      let x = Math.cos(lat1)*Math.sin(lat2) - Math.sin(lat1)*Math.cos(lat2)*Math.cos(dLon);
-      let bearing = Math.atan2(y, x) * 180 / Math.PI;
+  relativePosition(pin,position):void{
+      let pinLat:number = pin.lat;
+      let pinLng:number = pin.lng;
+      let dLat:number = (position.lat-pinLat)* Math.PI / 180;
+      let dLon:number = (position.lng-pinLng)* Math.PI / 180;
+      let lat1:number = pinLat * Math.PI / 180;
+      let lat2:number = position.lat * Math.PI / 180;
+      let y:number = Math.sin(dLon) * Math.cos(lat2);
+      let x:number = Math.cos(lat1)*Math.sin(lat2) - Math.sin(lat1)*Math.cos(lat2)*Math.cos(dLon);
+      let bearing:number = Math.atan2(y, x) * 180 / Math.PI;
       bearing = bearing + 180;
-      this.pin[i]['bearing'] = bearing;
+      pin['bearing'] = bearing;
 
-      let a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.sin(dLon/2) * Math.sin(dLon/2) * Math.cos(lat1) * Math.cos(lat2);
-      let c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      let a:number = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.sin(dLon/2) * Math.sin(dLon/2) * Math.cos(lat1) * Math.cos(lat2);
+      let c:number = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 
-      let distance = {
-        feet: 3958.76  * c,
-        meter: (3958.76  * c) * 0.3048
+      let distance:Object = {
+        miles: 3958.76  * c,
+        meter: (3958.76  * c) * 1609.34
       };
-      this.pin[i]['distance'] = distance;
+      pin['distance'] = distance;
   }
+
+  // Calculates the distance between two GPS points
+  calculateDistance(lat1:number, long1:number, lat2:number, long2:number):number {
+      return 11*10000*Math.sqrt(Math.pow(lat1-lat2,2)+Math.pow(long1-long2,2))
+  }
+
   /* Eof - HomePage Core Methode */
 
 }

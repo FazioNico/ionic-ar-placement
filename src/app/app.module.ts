@@ -3,7 +3,7 @@
 * @Date:   05-02-2017
 * @Email:  contact@nicolasfazio.ch
 * @Last modified by:   webmaster-fazio
-* @Last modified time: 07-02-2017
+* @Last modified time: 15-02-2017
 */
 
 import { NgModule, ErrorHandler } from '@angular/core';
@@ -16,6 +16,7 @@ import { AccelerometerService } from '../providers/accelerometer-service';
 import { CompassService } from '../providers/compass-service';
 import { GeolocationService } from '../providers/geolocation-service';
 import { GoogleMapService } from '../providers/google-map-service';
+import { GooglePlaceService } from '../providers/google-place-service';
 
 @NgModule({
   declarations: [
@@ -35,7 +36,8 @@ import { GoogleMapService } from '../providers/google-map-service';
     AccelerometerService,
     CompassService,
     GeolocationService,
-    GoogleMapService
+    GoogleMapService,
+    GooglePlaceService
   ]
 })
 export class AppModule {}

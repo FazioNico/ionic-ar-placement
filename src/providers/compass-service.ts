@@ -3,7 +3,7 @@
 * @Date:   06-02-2017
 * @Email:  contact@nicolasfazio.ch
 * @Last modified by:   webmaster-fazio
-* @Last modified time: 13-02-2017
+* @Last modified time: 19-02-2017
 */
 
 import { Injectable, EventEmitter } from '@angular/core';
@@ -17,7 +17,7 @@ import { Observable }   from 'rxjs/Observable';
   for more info on providers and Angular 2 DI.
 */
 @Injectable()
-export class CompassService extends EventEmitter<any> {
+export class CompassService extends EventEmitter<Object> {
 
   directions:string[] = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW', 'N'];
   watchCompassID:Observable<DeviceOrientationCompassHeading>;
@@ -43,7 +43,7 @@ export class CompassService extends EventEmitter<any> {
   }
 
   // Watch the device compass heading change
-  watchCompass(){
+  watchCompass():void{
     this.watchCompassID = DeviceOrientation.watchHeading()
     this.watchCompassID.subscribe(
       (data: DeviceOrientationCompassHeading) => {

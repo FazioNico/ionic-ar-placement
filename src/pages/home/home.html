@@ -3,7 +3,7 @@
 @Date:   05-02-2017
 @Email:  contact@nicolasfazio.ch
 @Last modified by:   webmaster-fazio
-@Last modified time: 13-02-2017
+@Last modified time: 16-02-2017
 -->
 
 <ion-content id="ezarpage" padding>
@@ -16,7 +16,7 @@
       <div class="spotsList">
         <div *ngFor="let spot of spots" [style.transform]="'translateX('+ spot.move +'px)'">
           <ion-badge>
-           {{ spot.pin.name }} - {{ spot.away.feet.toFixed(2) }} - {{ spot.away.meter.toFixed(5) }}
+           {{ spot.pin.name }} - {{ spot.away.meter.toFixed(5) }}
 
           </ion-badge>
         </div>

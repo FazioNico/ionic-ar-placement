@@ -3,10 +3,11 @@
 * @Date:   06-02-2017
 * @Email:  contact@nicolasfazio.ch
 * @Last modified by:   webmaster-fazio
-* @Last modified time: 13-02-2017
+* @Last modified time: 19-02-2017
 */
 
 import { Injectable, EventEmitter } from '@angular/core';
+import { ElementRef } from '@angular/core';
 import { GMAP_API_KEY } from './apikey-config';
 
 declare var google;
@@ -20,15 +21,17 @@ declare var google;
 @Injectable()
 export class GoogleMapService extends EventEmitter<any> {
 
-  apiKey:string = GMAP_API_KEY;
+  apiKey:string = GMAP_API_KEY || ''; // add you own API KEY
   mapInitialised:boolean = false;
   markersArray:any[] = [];
   bounds:any;
   map:any;
+  infoWindow:any;
+  gpsUserMarker:any;
+  gmapEnable: boolean = false;
 
   constructor() {
     super()
-    //this.loadGoogleMap()
   }
 
   /* Google Map loading & Initiallisation */
@@ -46,7 +49,7 @@ export class GoogleMapService extends EventEmitter<any> {
          script.id = "googleMaps";
          script.async = true;
          if(this.apiKey){
-           script.src = 'http://maps.google.com/maps/api/js?key=' + this.apiKey + '&callback=mapInit';
+           script.src = 'http://maps.google.com/maps/api/js?key=' + this.apiKey + '&libraries=places&callback=mapInit';
          } else {
            script.src = 'http://maps.google.com/maps/api/js?callback=mapInit';
          }
@@ -101,6 +104,7 @@ export class GoogleMapService extends EventEmitter<any> {
     setTimeout(()=>{
       console.log('google API init-> ', google)
       this.bounds = new google.maps.LatLngBounds();
+      this.infoWindow = new google.maps.InfoWindow();
       this.emit({
         result: true,
         message: 'google Map API init'
@@ -109,29 +113,57 @@ export class GoogleMapService extends EventEmitter<any> {
   }
 
   // setup google maps element
-  setupMap(coords,mapElement){
+  setupMap(coords,mapElement:ElementRef):void{
     this.map = new google.maps.Map(mapElement.nativeElement, {
       center: {lat: coords.lat, lng: coords.lng},
       zoom: 8
     });
     mapElement.nativeElement.style.height = `${window.innerHeight}px`;
+    this.gmapEnable = true;
   }
 
   // add blue gps marker for user position
-  addUserMarker(position){
+  addUserMarker(position):void{
     this.markersArray = [];
     this.bounds = new google.maps.LatLngBounds();
     // add blue gps marker
-    var icon = new google.maps.MarkerImage('http://www.google.com/intl/en_us/mapfiles/ms/micons/blue-dot.png',new google.maps.Size(30, 28),new google.maps.Point(0,0),new google.maps.Point(9, 28));
-    var gpsMarker = new google.maps.Marker({position: new google.maps.LatLng(position.lat, position.lng), map: this.map, title: "My Position", icon:icon});
+    let icon:any = new google.maps.MarkerImage('http://www.google.com/intl/en_us/mapfiles/ms/micons/blue-dot.png',new google.maps.Size(30, 28),new google.maps.Point(0,0),new google.maps.Point(9, 28));
+    this.gpsUserMarker = new google.maps.Marker({position: new google.maps.LatLng(position.lat, position.lng), map: this.map, title: "My Position", icon:icon});
     this.bounds.extend(new google.maps.LatLng(position.lat, position.lng));
-    this.markersArray.push(gpsMarker);
+    this.markersArray.push(this.gpsUserMarker);
   }
 
   // add marker to map and in array
-  addMarker(i, pin){
-    var marker = new google.maps.Marker({position: new google.maps.LatLng(pin[i].lat, pin[i].lng), map: this.map, title: pin[i].name});
-  	this.bounds.extend(new google.maps.LatLng(pin[i].lat, pin[i].lng));
+  addMarker(i:number, pin:Object):void{
+    let marker:any;
+    if(pin[i].icon){
+      let image = {
+        url: pin[i].icon,
+        size: new google.maps.Size(71, 71),
+        origin: new google.maps.Point(0, 0),
+        anchor: new google.maps.Point(17, 34),
+        scaledSize: new google.maps.Size(25, 25)
+      };
+      marker = new google.maps.Marker({
+        position: new google.maps.LatLng(pin[i].lat, pin[i].lng),
+        map: this.map,
+        title: pin[i].name,
+        icon: image,
+        animation: google.maps.Animation.DROP
+      });
+    }
+    else {
+      marker = new google.maps.Marker({
+        position: new google.maps.LatLng(pin[i].lat, pin[i].lng),
+        map: this.map,
+        title: pin[i].name,
+        animation: google.maps.Animation.DROP
+      });
+    }
+    // add window box on click
+    this.addOpenWindowEnvent(i,pin,marker)
+
+    this.bounds.extend(new google.maps.LatLng(pin[i].lat, pin[i].lng));
   	this.markersArray.push(marker);
 
     // automatiquement du zoom de la carte afin que celle-ci affiche
@@ -139,5 +171,22 @@ export class GoogleMapService extends EventEmitter<any> {
     this.map.fitBounds(this.bounds);
   }
 
+  addOpenWindowEnvent(i:number, pin:Object, marker:any){
+    let contentString:string = `
+      <div>
+        <p><b>${pin[i].name}</b></p>
+        <hr/>
+        <p>${pin[i].vicinity}</p>
+      </div>`;
+    google.maps.event.addListener(marker, 'click', ()=> {
+      this.infoWindow.setContent(contentString);
+      this.infoWindow.open(this.map, marker);
+    });
+  }
+
+  updateUserMarkerPos(position:any):void{
+    let newLatLng = new google.maps.LatLng(position.lat, position.lng);
+    this.gpsUserMarker.setPosition(newLatLng);
+  }
 
 }

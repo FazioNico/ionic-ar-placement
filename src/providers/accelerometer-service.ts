@@ -3,12 +3,10 @@
 * @Date:   06-02-2017
 * @Email:  contact@nicolasfazio.ch
 * @Last modified by:   webmaster-fazio
-* @Last modified time: 08-02-2017
+* @Last modified time: 19-02-2017
 */
 
 import { Injectable, EventEmitter } from '@angular/core';
-import 'rxjs/add/operator/map';
-
 import { DeviceMotion, DeviceMotionAccelerationData } from 'ionic-native';
 
 /*
@@ -24,7 +22,6 @@ export class AccelerometerService extends EventEmitter<any> {
 
   constructor() {
     super()
-    //console.log('Hello AccelerometerService Provider');
   }
 
   // Start checking the accelerometer
@@ -37,14 +34,16 @@ export class AccelerometerService extends EventEmitter<any> {
         accelerationReady = true
         //console.log('getCurrentAcceleration-> ',acceleration)
       },
-      (error: any) => {console.log('Error: getCurrentAcceleration-> ',error)}
+      (error: any) => {
+        this.onAccelerometerError(error)
+      }
     )
     .then(_=>{
       if(accelerationReady === true ){
         this.startAccelerometer();
       }
       else {
-        this.emit('Error: getCurrentAcceleration');
+        this.onAccelerometerError('getCurrentAcceleration')
       }
     });
   }
@@ -71,7 +70,7 @@ export class AccelerometerService extends EventEmitter<any> {
   }
 
   // onSuccess: Get current accelerometer values
-  onAccelerometerSuccess(acceleration):void {
+  onAccelerometerSuccess(acceleration:DeviceMotionAccelerationData):void {
     //console.log('watchAcceleration-> ',acceleration);
     this.emit(acceleration);
   }

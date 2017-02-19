@@ -2,12 +2,12 @@
 // @Date:   05-02-2017
 // @Email:  contact@nicolasfazio.ch
 // @Last modified by:   webmaster-fazio
-// @Last modified time: 13-02-2017
+// @Last modified time: 17-02-2017
 
 page-home {
 
   #topView, #arView {
-    
+
   }
   #arView{
     padding:30px 0;
@@ -33,6 +33,13 @@ page-home {
     left:0px;
     min-height: 250px;
     width: 100%;
+
+    .gm-style-mtc, .gm-svpc, .gm-style-cc{
+      display: none;
+    }
+    .gm-style .gm-style-iw {
+      color: #333;
+    }
   }
 }
 page-home, .ios .ion-page.show-page ~ .nav-decor {
