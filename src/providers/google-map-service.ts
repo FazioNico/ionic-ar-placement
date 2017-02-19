@@ -3,10 +3,11 @@
 * @Date:   06-02-2017
 * @Email:  contact@nicolasfazio.ch
 * @Last modified by:   webmaster-fazio
-* @Last modified time: 17-02-2017
+* @Last modified time: 19-02-2017
 */
 
 import { Injectable, EventEmitter } from '@angular/core';
+import { ElementRef } from '@angular/core';
 import { GMAP_API_KEY } from './apikey-config';
 
 declare var google;
@@ -20,7 +21,7 @@ declare var google;
 @Injectable()
 export class GoogleMapService extends EventEmitter<any> {
 
-  apiKey:string = GMAP_API_KEY;
+  apiKey:string = GMAP_API_KEY || ''; // add you own API KEY
   mapInitialised:boolean = false;
   markersArray:any[] = [];
   bounds:any;
@@ -31,7 +32,6 @@ export class GoogleMapService extends EventEmitter<any> {
 
   constructor() {
     super()
-    //this.loadGoogleMap()
   }
 
   /* Google Map loading & Initiallisation */
@@ -113,7 +113,7 @@ export class GoogleMapService extends EventEmitter<any> {
   }
 
   // setup google maps element
-  setupMap(coords,mapElement){
+  setupMap(coords,mapElement:ElementRef):void{
     this.map = new google.maps.Map(mapElement.nativeElement, {
       center: {lat: coords.lat, lng: coords.lng},
       zoom: 8
@@ -123,27 +123,28 @@ export class GoogleMapService extends EventEmitter<any> {
   }
 
   // add blue gps marker for user position
-  addUserMarker(position){
+  addUserMarker(position):void{
     this.markersArray = [];
     this.bounds = new google.maps.LatLngBounds();
     // add blue gps marker
-    var icon = new google.maps.MarkerImage('http://www.google.com/intl/en_us/mapfiles/ms/micons/blue-dot.png',new google.maps.Size(30, 28),new google.maps.Point(0,0),new google.maps.Point(9, 28));
+    let icon:any = new google.maps.MarkerImage('http://www.google.com/intl/en_us/mapfiles/ms/micons/blue-dot.png',new google.maps.Size(30, 28),new google.maps.Point(0,0),new google.maps.Point(9, 28));
     this.gpsUserMarker = new google.maps.Marker({position: new google.maps.LatLng(position.lat, position.lng), map: this.map, title: "My Position", icon:icon});
     this.bounds.extend(new google.maps.LatLng(position.lat, position.lng));
     this.markersArray.push(this.gpsUserMarker);
   }
 
   // add marker to map and in array
-  addMarker(i, pin){
+  addMarker(i:number, pin:Object):void{
+    let marker:any;
     if(pin[i].icon){
-      var image = {
+      let image = {
         url: pin[i].icon,
         size: new google.maps.Size(71, 71),
         origin: new google.maps.Point(0, 0),
         anchor: new google.maps.Point(17, 34),
         scaledSize: new google.maps.Size(25, 25)
       };
-      var marker = new google.maps.Marker({
+      marker = new google.maps.Marker({
         position: new google.maps.LatLng(pin[i].lat, pin[i].lng),
         map: this.map,
         title: pin[i].name,
@@ -152,7 +153,7 @@ export class GoogleMapService extends EventEmitter<any> {
       });
     }
     else {
-      var marker = new google.maps.Marker({
+      marker = new google.maps.Marker({
         position: new google.maps.LatLng(pin[i].lat, pin[i].lng),
         map: this.map,
         title: pin[i].name,
@@ -160,7 +161,18 @@ export class GoogleMapService extends EventEmitter<any> {
       });
     }
     // add window box on click
-    let contentString = `
+    this.addOpenWindowEnvent(i,pin,marker)
+
+    this.bounds.extend(new google.maps.LatLng(pin[i].lat, pin[i].lng));
+  	this.markersArray.push(marker);
+
+    // automatiquement du zoom de la carte afin que celle-ci affiche
+    // l’ensemble des markers de la map (methode .fitBounds() de google Map API v3)
+    this.map.fitBounds(this.bounds);
+  }
+
+  addOpenWindowEnvent(i:number, pin:Object, marker:any){
+    let contentString:string = `
       <div>
         <p><b>${pin[i].name}</b></p>
         <hr/>
@@ -170,13 +182,6 @@ export class GoogleMapService extends EventEmitter<any> {
       this.infoWindow.setContent(contentString);
       this.infoWindow.open(this.map, marker);
     });
-
-    this.bounds.extend(new google.maps.LatLng(pin[i].lat, pin[i].lng));
-  	this.markersArray.push(marker);
-
-    // automatiquement du zoom de la carte afin que celle-ci affiche
-    // l’ensemble des markers de la map (methode .fitBounds() de google Map API v3)
-    this.map.fitBounds(this.bounds);
   }
 
   updateUserMarkerPos(position:any):void{
