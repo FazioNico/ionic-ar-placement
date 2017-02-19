@@ -3,7 +3,7 @@
 * @Date:   06-02-2017
 * @Email:  contact@nicolasfazio.ch
 * @Last modified by:   webmaster-fazio
-* @Last modified time: 14-02-2017
+* @Last modified time: 19-02-2017
 */
 
 import { Injectable, EventEmitter } from '@angular/core';
@@ -43,7 +43,7 @@ export class CompassService extends EventEmitter<Object> {
   }
 
   // Watch the device compass heading change
-  watchCompass(){
+  watchCompass():void{
     this.watchCompassID = DeviceOrientation.watchHeading()
     this.watchCompassID.subscribe(
       (data: DeviceOrientationCompassHeading) => {

@@ -3,7 +3,7 @@
 * @Date:   06-02-2017
 * @Email:  contact@nicolasfazio.ch
 * @Last modified by:   webmaster-fazio
-* @Last modified time: 14-02-2017
+* @Last modified time: 19-02-2017
 */
 
 import { Injectable, EventEmitter } from '@angular/core';
@@ -22,7 +22,6 @@ export class AccelerometerService extends EventEmitter<any> {
 
   constructor() {
     super()
-    //console.log('Hello AccelerometerService Provider');
   }
 
   // Start checking the accelerometer
