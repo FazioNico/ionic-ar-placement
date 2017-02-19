@@ -3,7 +3,7 @@
 * @Date:   14-02-2017
 * @Email:  contact@nicolasfazio.ch
 * @Last modified by:   webmaster-fazio
-* @Last modified time: 18-02-2017
+* @Last modified time: 19-02-2017
 */
 
 import { Injectable } from '@angular/core';
@@ -20,7 +20,7 @@ declare var google;
 @Injectable()
 export class GooglePlaceService {
 
-  apiKey:string = GPLACE_API_KEY;
+  apiKey:string = GPLACE_API_KEY || ''; // add you own API KEY
   apiEnpoint:Object = {
     nearbysearch: 'nearbySearch',
     textsearch: 'textSearch',
